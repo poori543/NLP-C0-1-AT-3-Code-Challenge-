@@ -1,0 +1,80 @@
+
+VOWELS = set("aeiou")
+def is_consonant(word, i):
+    ch = word[i]
+    if ch in VOWELS:
+        return False
+    if ch == "y" and i > 0:
+        return not is_consonant(word, i - 1)
+    return True
+def measure(word):
+    m = 0
+    i = 0
+    n = len(word)
+    while i < n and is_consonant(word, i):
+        i += 1
+    while i < n:
+        while i < n and not is_consonant(word, i):
+            i += 1
+        if i < n:
+            m += 1
+            while i < n and is_consonant(word, i):
+                i += 1
+    return m
+def contains_vowel(word):
+    return any(not is_consonant(word, i) for i in range(len(word)))
+def ends_double_consonant(word):
+    return (
+        len(word) >= 2
+        and word[-1] == word[-2]
+        and is_consonant(word, len(word) - 1)
+    )
+def cvc(word):
+    if len(word) < 3:
+        return False
+    n = len(word)
+    return (
+        is_consonant(word, n - 3)
+        and not is_consonant(word, n - 2)
+        and is_consonant(word, n - 1)
+        and word[-1] not in "wxy"
+    )
+def porter_step1(word):
+    # Step 1a
+    if word.endswith("sses"):
+        word = word[:-2]
+    elif word.endswith("ies"):
+        word = word[:-2]
+    elif word.endswith("ss"):
+        pass
+    elif word.endswith("s"):
+        word = word[:-1]
+    removed_suffix = False
+    if word.endswith("eed"):
+        stem = word[:-3]
+        if measure(stem) > 0:
+            word = stem + "ee"
+    elif word.endswith("ed"):
+        stem = word[:-2]
+        if contains_vowel(stem):
+            word = stem
+            removed_suffix = True
+    elif word.endswith("ing"):
+        stem = word[:-3]
+        if contains_vowel(stem):
+            word = stem
+            removed_suffix = True
+    if removed_suffix:
+        if word.endswith(("at", "bl", "iz")):
+            word += "e"
+        elif ends_double_consonant(word) and word[-1] not in "lsz":
+            word = word[:-1]
+        elif measure(word) == 1 and cvc(word):
+            word += "e"
+    if word.endswith("y") and contains_vowel(word[:-1]):
+        word = word[:-1] + "i"
+    return word
+Q = int(input())
+for _ in range(Q):
+    word = input().strip()
+    print(porter_step1(word))
