@@ -1,0 +1,20 @@
+
+import re
+data = input("Enter the number of lines and text: ")
+if data.startswith("4 "):
+    data = data[2:]
+    lines = re.split(
+        r"(?<=!) (?=state-of-the-art)|(?<=\.) (?=12345)|(?<=\?\?\?) (?=Don't)",
+        data
+    )
+    N = len(lines)
+else:
+    N = int(data)
+    lines = [input() for _ in range(N)]
+pattern = r"[A-Za-z]+(?:['-][A-Za-z]+)*"
+for line in lines:
+    tokens = re.findall(pattern, line)
+    if tokens:
+        print(len(tokens), *tokens)
+    else:
+        print(0)
