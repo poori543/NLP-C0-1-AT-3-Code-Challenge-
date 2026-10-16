@@ -1,0 +1,77 @@
+
+VOWELS = set("aeiou")
+def is_doublable(word):
+    if len(word) < 3:
+        return False
+    if not (
+        word[-3] not in VOWELS
+        and word[-2] in VOWELS
+        and word[-1] not in VOWELS
+    ):
+        return False
+    if word[-1] in "wxy":
+        return False
+    vowel_groups = 0
+    in_vowel_group = False
+    for ch in word:
+        if ch in VOWELS:
+            if not in_vowel_group:
+                vowel_groups += 1
+            in_vowel_group = True
+        else:
+            in_vowel_group = False
+    return vowel_groups == 1
+def inflect(stem, feature):
+    # Rule set A: Plural and third-person singular
+    if feature in ("N+PL", "V+3SG"):
+        if stem.endswith(("s", "x", "z", "ch", "sh")):
+            return stem + "es"
+        elif len(stem) >= 2 and stem[-1] == "o" and stem[-2] not in VOWELS:
+            return stem + "es"
+        elif len(stem) >= 2 and stem.endswith("y") and stem[-2] not in VOWELS:
+            return stem[:-1] + "ies"
+        else:
+            return stem + "s"
+    elif feature == "V+PROG":
+        if (
+            len(stem) >= 3
+            and stem.endswith("e")
+            and stem[-2] not in VOWELS
+        ):
+            return stem[:-1] + "ing"
+        elif is_doublable(stem):
+            return stem + stem[-1] + "ing"
+        else:
+            return stem + "ing"
+    elif feature in ("V+PAST", "ADJ+COMP", "ADJ+SUP"):
+        if feature == "V+PAST":
+            suffix = "ed"
+        elif feature == "ADJ+COMP":
+            suffix = "er"
+        else:
+            suffix = "est"
+        if stem.endswith("e"):
+            return stem + suffix[1:] if suffix != "ed" else stem + "d"
+        elif (
+            len(stem) >= 2
+            and stem.endswith("y")
+            and stem[-2] not in VOWELS
+        ):
+            return stem[:-1] + "i" + suffix
+        elif is_doublable(stem):
+            return stem + stem[-1] + suffix
+        else:
+            return stem + suffix
+    return stem
+L = int(input())
+lexicon = {}
+for _ in range(L):
+    stem, feature, form = input().split()
+    lexicon[(stem, feature)] = form
+Q = int(input())
+for _ in range(Q):
+    stem, feature = input().split()
+    if (stem, feature) in lexicon:
+        print(lexicon[(stem, feature)])
+    else:
+        print(inflect(stem, feature))
