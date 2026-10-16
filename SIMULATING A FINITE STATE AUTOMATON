@@ -1,0 +1,36 @@
+
+n, k = map(int, input().split())
+alphabet = input().split()
+start_state = int(input())
+accepting_data = list(map(int, input().split()))
+m = accepting_data[0]
+accepting_states = set(accepting_data[1:m + 1])
+t = int(input())
+transitions = {}
+for _ in range(t):
+    p, c, r = input().split()
+    p = int(p)
+    r = int(r)
+    if (p, c) not in transitions:
+        transitions[(p, c)] = set()
+    transitions[(p, c)].add(r)
+Q = int(input())
+for _ in range(Q):
+    string = input()
+    if string == "#":
+        string = ""
+    current_states = {start_state}
+    for symbol in string:
+        next_states = set()
+        for state in current_states:
+            next_states.update(
+                transitions.get((state, symbol), set())
+            )
+        current_states = next_states
+        if not current_states:
+            break
+            
+    if current_states & accepting_states:
+        print("ACCEPT")
+    else:
+        print("REJECT")
