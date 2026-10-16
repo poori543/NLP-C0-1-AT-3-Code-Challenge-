@@ -1,0 +1,75 @@
+
+VOWELS = set("aeiou")
+def is_doublable(word):
+    if len(word) < 3:
+       return False
+    if not (
+        word[-3] not in VOWELS
+        and word[-2] in VOWELS
+        and word[-1] not in VOWELS
+    ):
+        return False
+    if word[-1] in "wxy":
+        return False
+    vowel_groups = 0
+    inside_vowel_group = False
+    for ch in word:
+        if ch in VOWELS:
+            if not inside_vowel_group:
+                vowel_groups += 1
+            inside_vowel_group = True
+        else:
+            inside_vowel_group = False
+    return vowel_groups == 1
+def generate(stem, pos, feature):
+    if feature in ("PL", "3SG"):
+        if stem.endswith(("s", "x", "z", "ch", "sh")):
+            return stem + "es"
+        elif len(stem) >= 2 and stem.endswith("o") and stem[-2] not in VOWELS:
+            return stem + "es"
+        elif len(stem) >= 2 and stem.endswith("y") and stem[-2] not in VOWELS:
+            return stem[:-1] + "ies"
+        return stem + "s"
+    if feature == "PROG":
+        if len(stem) >= 3 and stem.endswith("e") and stem[-2] not in VOWELS:
+            return stem[:-1] + "ing"
+        elif is_doublable(stem):
+            return stem + stem[-1] + "ing"
+        return stem + "ing"
+    if feature in ("PAST", "COMP", "SUP"):
+        suffix = {"PAST": "ed", "COMP": "er", "SUP": "est"}[feature]
+        if stem.endswith("e"):
+            if feature == "PAST":
+                return stem + "d"
+            return stem + suffix[1:]
+        elif len(stem) >= 2 and stem.endswith("y") and stem[-2] not in VOWELS:
+            return stem[:-1] + "i" + suffix
+        elif is_doublable(stem):
+            return stem + stem[-1] + suffix
+        return stem + suffix
+    return stem
+S = int(input())
+lexicon = []
+for _ in range(S):
+    stem, pos = input().split()
+    lexicon.append((stem, pos))
+Q = int(input())
+for _ in range(Q):
+    surface = input().strip()
+    analyses = set()
+    for stem, pos in lexicon:
+        if surface == stem:
+            analyses.add(stem + "+" + pos)
+        if pos == "N":
+            features = ["PL"]
+        elif pos == "V":
+            features = ["3SG", "PROG", "PAST"]
+        else:
+            features = ["COMP", "SUP"]
+        for feature in features:
+            if generate(stem, pos, feature) == surface:
+                analyses.add(stem + "+" + pos + "+" + feature)
+    if analyses:
+        print(", ".join(sorted(analyses)))
+    else:
+        print("UNKNOWN")
